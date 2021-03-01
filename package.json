@@ -40,7 +40,7 @@
     "prepack": "tsc -b tsconfig.json",
     "test": "npm run unit-test",
     "unit-test": "nyc --extension .ts mocha --forbid-only \"test/unit/**/*.test.ts\"",
-    "integration-test": "AWS_SDK_LOAD_CONFIG=true mocha --forbid-only --exit --config \"test/integration/.mocharc.yml\" \"test/integration/**/*.test.ts\""
+    "integration": "AWS_SDK_LOAD_CONFIG=true mocha --forbid-only --exit --config \"test/integration/.mocharc.yml\" \"test/integration/**/*.test.ts\""
   },
   "bugs": {
     "url": "https://github.com/boostercloud/booster/issues"
@@ -51,6 +51,7 @@
     "@types/aws-lambda": "8.10.48",
     "@types/chai": "^4.2.15",
     "@types/chai-as-promised": "^7.1.3",
+    "@types/child-process-promise": "^2.2.1",
     "@types/faker": "5.1.5",
     "@types/mocha": "^5.2.7",
     "@types/node": "14.14.20",
@@ -64,6 +65,7 @@
     "aws-sdk": "2.764.0",
     "chai": "^4.3.0",
     "chai-as-promised": "^7.1.1",
+    "child-process-promise": "^2.2.1",
     "cross-fetch": "^3.0.4",
     "faker": "5.1.0",
     "graphql-tag": "^2.10.3",
