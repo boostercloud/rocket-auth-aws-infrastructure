@@ -50,7 +50,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.BOT_AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
-      - run: npm ci
+      - run: npm install
       - run: npm run compile
       
       - run: npm install @boostercloud/cli@0.11.5 --global
