@@ -47,6 +47,9 @@ jobs:
       - run: npm run compile
 
       - run: npm install @boostercloud/cli@0.11.5 --global
+      - run: export AWS_ACCESS_KEY_ID=${{ secrets.BOT_AWS_ACCESS_KEY_ID }}
+      - run: export AWS_SECRET_ACCESS_KEY=${{ secrets.BOT_AWS_SECRET_ACCESS_KEY }}
+      - run: export AWS_DEFAULT_REGION=us-east-1
       
       # Discard all changes that might have occurred after bootstrap
       - run: git stash

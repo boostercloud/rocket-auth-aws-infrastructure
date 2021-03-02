@@ -12,7 +12,10 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: 12.x
-      - run: npm install @boostercloud/cli@0.11.5 --global 
+      - run: npm install @boostercloud/cli@0.11.5 --global
+      - run: export AWS_ACCESS_KEY_ID=${{ secrets.BOT_AWS_ACCESS_KEY_ID }}
+      - run: export AWS_SECRET_ACCESS_KEY=${{ secrets.BOT_AWS_SECRET_ACCESS_KEY }}
+      - run: export AWS_DEFAULT_REGION=us-east-1 
       - run: npm install
       - run: npm run compile
       - run: npm run integration --stream
