@@ -24,7 +24,7 @@ Booster.configure('production', (config: BoosterConfig): void => {
     {
       packageName: '@boostercloud/rocket-auth-aws-infrastructure',
       parameters: {         
-        mode: 'Passwordless',                     
+        mode: 'Passwordless'                     
       },
     },
   ])
@@ -36,10 +36,10 @@ Booster.configure('production', (config: BoosterConfig): void => {
 ```typescript
 {
   passwordPolicy?: {                         // Optional, all values are set to true by default.
-    minLength?: number                       // Minimum length, which must be at least 6 characters but fewer than 99 character
-    requireDigits: boolean                   // Require numbers
-    requireLowercase: boolean                // Require lowercase letters
-    requireSymbols: boolean                  // Require special characters
+    minLength?: number,                       // Minimum length, which must be at least 6 characters but fewer than 99 character
+    requireDigits: boolean,                   // Require numbers
+    requireLowercase: boolean,                // Require lowercase letters
+    requireSymbols: boolean,                  // Require special characters
     requireUppercase: boolean                // Require uppercase letters
   }
   mode: 'Passwordless' | 'UserPassword'      // If Passwordless, the user must be a phone number. If UserPassword, the user must be a valid email.
@@ -81,7 +81,7 @@ POST https://<httpURL>/auth/sign-up
   "username": "string",
   "password": "string",
   "userAttributes": {
-    "role": "string",
+    "role": "string"
   }
 }
 ```
@@ -237,6 +237,7 @@ UserPassword:
 ```json
 {
   "accessToken": "string",
+  "tokenId": "string",
   "expiresIn": "string",
   "refreshToken": "string",
   "tokenType": "string"
@@ -245,7 +246,8 @@ UserPassword:
 
 | Parameter      | Description                                                                                                                          |
 | -------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| _accessToken_  | The token you can use to access restricted resources. It must be sent in the `Authorization` header (prefixed with the `tokenType`). |
+| _accessToken_  | The token you can use to finish de session.|
+| _tokenId_      | The token you can use to access restricted resources. It must be sent in the `Authorization` header (prefixed with the `tokenType`). |
 | _expiresIn_    | The period of time, in seconds, after which the token will expire.                                                                   |
 | _refreshToken_ | The token you can use to get a new access token after it has expired.                                                                |
 | _tokenType_    | The type of token used. It is always `Bearer`.                                                                                       |
@@ -255,7 +257,7 @@ Passwordless:
 ```json
 {
   "session": "string",
-  "message": "string",
+  "message": "string"
 }
 ````
 
@@ -263,6 +265,42 @@ Passwordless:
 | -------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
 | session    | The type of token used. It is always `Bearer`.                                                                                       |
 | _message_    | Message with the next steps. It is always: `Use the session and the code we have sent you via SMS to get your access tokens via POST /token.`.  |                                                                                     |
+
+Query to get the access tokens for Passwordless mode:
+
+#### Endpoint
+
+```http request
+POST https://<httpURL>/auth/token
+```
+
+#### Request body
+
+```json
+{
+  "username": "string",
+  "session": "string",
+  "confirmationCode": "string"
+}
+```
+
+| Parameter  | Description                                                                            |
+| ---------- | -------------------------------------------------------------------------------------- |
+| _username_ | The phone number of the user you want to sign in. They must have previously signed up. |
+| _session_  | The session obtained in the sign in response.                                          |
+| _confirmationCode_  | The confirmation code received in the SMS message after sign in.              |
+
+#### Response
+
+```json
+{
+  "accessToken": "string",
+  "tokenId": "string",
+  "expiresIn": "string",
+  "refreshToken": "string",
+  "tokenType": "string"
+}
+```
 
 #### Errors
 
@@ -358,6 +396,7 @@ POST https://<httpURL>/auth/token/refresh
 ```json
 {
   "accessToken": "string",
+  "tokenId": "string",
   "expiresIn": "string",
   "refreshToken": "string",
   "tokenType": "string"
