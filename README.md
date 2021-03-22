@@ -30,6 +30,8 @@ Booster.configure('production', (config: BoosterConfig): void => {
   ])
 })
 ```
+###### Note:
+> Make sure that you have defined the suitable roles for your application. Please, check the [Official Booster Documentation](https://github.com/boostercloud/booster/tree/main/docs#authentication-and-authorization) for more information.
 
 ## Configuration Options
 
@@ -45,6 +47,8 @@ Booster.configure('production', (config: BoosterConfig): void => {
   mode: 'Passwordless' | 'UserPassword'      // If Passwordless, the user must be a phone number. If UserPassword, the user must be a valid email.
 }
 ```
+
+
 
 ## Outputs
 
@@ -417,3 +421,104 @@ Refresh token error response body example: Invalid refresh token specified
 ```
 
 You will get a HTTP status code different from 2XX and a body with a message telling you the reason of the error.
+
+### Forgot password
+In case the password is forgotten, users can initiate the password change process through this endpoint.
+
+#### Endpoint
+
+```http request
+POST https://<httpURL>/auth/password/forgot
+```
+
+#### Request body
+
+```json
+{
+  "username": "string"
+}
+```
+
+| Parameter     | Description                                   |
+| ------------- | --------------------------------------------- |
+| _username_    | The username of the user whose password you want to change. They must have previously signed up. |
+
+#### Response
+
+```json
+{
+  "message": "string"
+}
+```
+
+| Parameter     | Description                                   |
+| ------------- | --------------------------------------------- |
+| _message_     | Confirmation message. It is always: `"The confirmation code to change your password has been sent to: [USER_EMAIL]."` |
+
+
+#### Errors
+
+You will get an HTTP status code different from 2XX and a body with a message telling you the reason of the error.
+
+Example: User not found.
+
+```json
+{
+  "error": {
+    "type": "UserNotFoundException",
+    "message": "Username/client id combination not found."
+  }
+}
+```
+### Change password
+Using the code obtained from the email sent by the forgot password endpoint, users can change their password.
+
+#### Endpoint
+
+```http request
+POST https://<httpURL>/auth/password/change
+```
+
+#### Request body
+
+```json
+{
+  "username": "string",
+  "password": "string",
+  "confirmationCode": "string"
+}
+```
+
+| Parameter  | Description                                                                            |
+| ---------- | -------------------------------------------------------------------------------------- |
+| _username_ | The username of the user you want to change the password. They must have signed up previously. |
+| _password_  | The new password for sign in.                                          |
+| _confirmationCode_  | The confirmation code received in the user's email.              |
+
+#### Response
+
+```json
+{
+  "message": "string"
+}
+```
+
+| Parameter     | Description                                   |
+| ------------- | --------------------------------------------- |
+| _message_     | Confirmation Message. It is always: `"Your password has been successfully changed."` |
+
+
+#### Errors
+
+You will get an HTTP status code different from 2XX and a body with a message telling you the reason of the error.
+
+Example: Confirmation Code is missing.
+
+```json
+{
+  "error": {
+    "type": "MissingRequiredParameter",
+    "message": "Missing required key 'ConfirmationCode' in params"
+  }
+}
+```
