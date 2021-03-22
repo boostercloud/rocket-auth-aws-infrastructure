@@ -471,7 +471,7 @@ Example: User not found.
 }
 ```
 ### Change password
-Using the code obtained from the forgot password endpoint, users can change their password.
+Using the code obtained from the email sent by the forgot password endpoint, users can change their password.
 
 #### Endpoint
 
@@ -491,7 +491,7 @@ POST https://<httpURL>/auth/password/change
 
 | Parameter  | Description                                                                            |
 | ---------- | -------------------------------------------------------------------------------------- |
-| _username_ | The username of the user you wants to change the password. They must have previously signed up. |
+| _username_ | The username of the user you want to change the password. They must have signed up previously. |
 | _password_  | The new password for sign in.                                          |
 | _confirmationCode_  | The confirmation code received in the user's email.              |
 
