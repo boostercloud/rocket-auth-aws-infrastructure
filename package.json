@@ -1,6 +1,6 @@
 {
   "name": "@boostercloud/rocket-auth-aws-infrastructure",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Booster rocket to deploy an auth api using AWS Cognito",
   "keywords": [
     "Booster",
@@ -45,8 +45,8 @@
     "url": "https://github.com/boostercloud/booster/issues"
   },
   "devDependencies": {
-    "@boostercloud/framework-provider-aws-infrastructure": "0.11.5",
-    "@boostercloud/framework-types": "0.11.5",
+    "@boostercloud/framework-provider-aws-infrastructure": "0.15.1",
+    "@boostercloud/framework-types": "0.15.1",
     "@types/aws-lambda": "8.10.48",
     "@types/chai": "^4.2.15",
     "@types/chai-as-promised": "^7.1.3",
