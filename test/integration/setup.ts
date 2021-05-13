@@ -1,5 +1,5 @@
 import { deploy } from './helpers/deploy'
-//import { nuke } from './helpers/nuke'
+import { nuke } from './helpers/nuke'
 import { sleep } from './helpers/sleep'
 import { setEnv, checkConfigAnd } from './helpers/utils'
 import { sandboxPathFor } from './helpers/fileHelper'
@@ -44,7 +44,6 @@ before(async () => {
 })
 
 after(async () => {
-  /*
   await setEnv()
   const sandboxPath = sandboxPathFor('deploy')
   const sandboxedProject = createSandboxProject(sandboxPath)
@@ -52,5 +51,5 @@ after(async () => {
   await overrideWithBoosterLocalDependencies(sandboxedProject)
 
   await checkConfigAnd(nuke.bind(null, sandboxedProject))
-  removeSandboxProject(sandboxPath)*/
+  removeSandboxProject(sandboxPath)
 })
