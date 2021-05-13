@@ -13,6 +13,7 @@ chai.use(require('chai-as-promised'))
 const expect = chai.expect
 
 describe('Auth api creation', () => {
+  let apiName: string
   context('when no roles defined', () => {
     it('nothing should be built', () => {
       const config = new BoosterConfig('test')
@@ -51,6 +52,10 @@ describe('Auth api creation', () => {
       const params: AWSAuthRocketParams = {
         mode,
       }
+      new RestApi(appStack, config.resourceNames.applicationStack + '-rest-api', {
+        deployOptions: { stageName: config.environmentName },
+      })
+      apiName = config.resourceNames.applicationStack + '-rest-api'
       AuthStack.mountStack(params, appStack, config)
       const basePrefix = AuthStack.rocketArtifactsPrefix(config)
       return {
@@ -95,7 +100,7 @@ describe('Auth api creation', () => {
     }
 
     const verifyOutputs = (appStack: Stack): void => {
-      const outputs = ['AuthApiEndpoint', 'AuthApiIssuer', 'AuthApiJwksUri']
+      const outputs = ['AuthApiURL', 'AuthApiIssuer', 'AuthApiJwksUri', 'AuthApiUserPoolId', 'AuthApiUserPoolClientId']
       outputs.forEach((item) => {
         const output = appStack.node.tryFindChild(item) as CfnOutput
         expect(output).not.to.be.undefined
@@ -136,8 +141,7 @@ describe('Auth api creation', () => {
       })
 
       it('it should create a rest api', () => {
-        const apiId = `${basePrefix}-api`
-        const api = appStack.node.tryFindChild(apiId) as RestApi
+        const api = appStack.node.tryFindChild(apiName) as RestApi
         expect(api).not.to.be.undefined
         expect(api.root?.getResource('auth')).not.to.be.undefined
         expect(api.root?.getResource('auth')?.getResource('sign-in')).not.to.be.undefined
@@ -204,9 +208,8 @@ describe('Auth api creation', () => {
         verifyUserPoolClient(appStack, basePrefix)
       })
 
-      it('it should create a rest api', () => {
-        const apiId = `${basePrefix}-api`
-        const api = appStack.node.tryFindChild(apiId) as RestApi
+      it('it should add an auth endpoint', () => {
+        const api = appStack.node.tryFindChild(apiName) as RestApi
         expect(api).not.to.be.undefined
         expect(api.root?.getResource('auth')).not.to.be.undefined
         expect(api.root?.getResource('auth')?.getResource('sign-in')).not.to.be.undefined

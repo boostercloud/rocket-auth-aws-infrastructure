@@ -6,6 +6,7 @@ import {
   VerificationEmailStyle,
   UserPoolDomain,
   UserPoolTriggers,
+  CfnUserPoolGroup,
 } from '@aws-cdk/aws-cognito'
 import { Effect, PolicyStatement } from '@aws-cdk/aws-iam'
 import { LambdaIntegration, Resource, RestApi, Cors, CorsOptions } from '@aws-cdk/aws-apigateway'
@@ -39,7 +40,6 @@ type ResourceParams = {
   userPool?: UserPool
   userPoolClientId?: string
   defaultCorsPreflightOptions?: CorsOptions
-  authApi?: RestApi
   tokenVerifier?: TokenVerifier
 }
 
@@ -59,12 +59,13 @@ export class AuthStack {
       resourceParams.userPool = userPool
       resourceParams.userPoolClientId = userPoolClient.userPoolClientId
 
-      const authApi = AuthStack.createAuthResources(resourceParams)
-      resourceParams.authApi = authApi
+      AuthStack.createAuthResources(resourceParams)
 
       const tokenVerifier = AuthStack.tokenVerifier(resourceParams)
+      config.tokenVerifier = tokenVerifier
       resourceParams.tokenVerifier = tokenVerifier
 
+      AuthStack.createGroups(resourceParams)
       AuthStack.createEnvVars(resourceParams)
       AuthStack.printOutput(resourceParams)
     }
@@ -185,14 +186,11 @@ export class AuthStack {
    * @param resourceParams current resource params
    * @returns RestApi
    */
-  private static createAuthResources(resourceParams: ResourceParams): RestApi {
-    const { rocketStackPrefixId, config, stack } = resourceParams
+  private static createAuthResources(resourceParams: ResourceParams): void {
+    const { config, stack } = resourceParams
 
-    const rootAuthAPI = new RestApi(stack, `${rocketStackPrefixId}-api`, {
-      deployOptions: { stageName: config.environmentName },
-    })
-
-    const rootResource = rootAuthAPI.root.addResource('auth')
+    const rootAPI = stack.node.tryFindChild(config.resourceNames.applicationStack + '-rest-api') as RestApi
+    const rootAuthResource = rootAPI.root.addResource('auth')
 
     const defaultCorsPreflightOptions: CorsOptions = {
       allowHeaders: ['*'],
@@ -201,14 +199,12 @@ export class AuthStack {
     }
 
     resourceParams.defaultCorsPreflightOptions = defaultCorsPreflightOptions
-    resourceParams.rootResource = rootResource
+    resourceParams.rootResource = rootAuthResource
 
     AuthStack.createSignInResources(resourceParams)
     AuthStack.createSignUpResources(resourceParams)
     AuthStack.createTokenResources(resourceParams)
     AuthStack.createPasswordResources(resourceParams)
-
-    return rootAuthAPI
   }
 
   /**
@@ -230,9 +226,16 @@ export class AuthStack {
   private static createSignUpResources(resourceParams: ResourceParams): void {
     const { rootResource, defaultCorsPreflightOptions, config } = resourceParams
     const signUpResource = rootResource!.addResource('sign-up', { defaultCorsPreflightOptions })
-    AuthStack.addIntegration(resourceParams, 'sign-up', signUpResource, 'sign-up.handler', ['cognito-idp:SignUp'], {
-      rolesConfig: JSON.stringify(config.roles),
-    })
+    AuthStack.addIntegration(
+      resourceParams,
+      'sign-up',
+      signUpResource,
+      'sign-up.handler',
+      ['cognito-idp:SignUp', 'cognito-idp:AdminAddUserToGroup'],
+      {
+        rolesConfig: JSON.stringify(config.roles),
+      }
+    )
 
     let resource = signUpResource.addResource('confirm', { defaultCorsPreflightOptions })
     AuthStack.addIntegration(resourceParams, 'sign-up-confirm', resource, 'sign-up-confirm.handler', [
@@ -335,7 +338,7 @@ export class AuthStack {
 
   /**
    * It prints the following Cloud Formation output vars:
-   *  AuthApiEndpoint: Base auth entpoint
+   *  AuthApiURL: Base auth entpoint
    *  AuthApiIssuer: Issuer which sign jwt tokens
    *  AuthApiJwksUri: Uri with the public rsa keys to validate signed tokens
    *  AuthUserPoolId: User pool id, useful for integration tests
@@ -343,9 +346,11 @@ export class AuthStack {
    * @param resourceParams current resource params
    */
   private static printOutput(resourceParams: ResourceParams): void {
-    const { stack, authApi, tokenVerifier } = resourceParams
-    new CfnOutput(stack, 'AuthApiEndpoint', {
-      value: authApi!.url + 'auth',
+    const { stack, tokenVerifier, userPool, userPoolClientId, config } = resourceParams
+    const rootAPI = stack.node.tryFindChild(config.resourceNames.applicationStack + '-rest-api') as RestApi
+
+    new CfnOutput(stack, 'AuthApiURL', {
+      value: rootAPI!.url + 'auth',
       description: 'Auth API endpoint',
     })
 
@@ -359,14 +364,14 @@ export class AuthStack {
       description: 'Auth API JKWS URI',
     })
 
-    new CfnOutput(stack, 'AuthUserPoolId', {
-      value: resourceParams.userPool?.userPoolId!,
-      description: 'Auth UserPoolId',
+    new CfnOutput(stack, 'AuthApiUserPoolId', {
+      value: userPool?.userPoolId!,
+      description: 'Auth API UserPoolId',
     })
 
-    new CfnOutput(stack, 'AuthUserPoolClientId', {
-      value: resourceParams.userPoolClientId!,
-      description: 'Auth UserPoolClientId',
+    new CfnOutput(stack, 'AuthApiUserPoolClientId', {
+      value: userPoolClientId!,
+      description: 'Auth API UserPoolClientId',
     })
   }
   /**
@@ -396,9 +401,25 @@ export class AuthStack {
     const graphQLHandler = stack.node.tryFindChild('graphql-handler') as Function
     graphQLHandler?.addEnvironment(JWT_ENV_VARS.BOOSTER_JWKS_URI, jwksUri)
     graphQLHandler?.addEnvironment(JWT_ENV_VARS.BOOSTER_JWT_ISSUER, issuer)
+    graphQLHandler?.addEnvironment(JWT_ENV_VARS.BOOSTER_ROLES_CLAIM, 'cognito:groups')
 
     const subscriptionHandler = stack.node.tryFindChild('subscriptions-notifier') as Function
     subscriptionHandler?.addEnvironment(JWT_ENV_VARS.BOOSTER_JWKS_URI, jwksUri)
     subscriptionHandler?.addEnvironment(JWT_ENV_VARS.BOOSTER_JWT_ISSUER, issuer)
+    subscriptionHandler?.addEnvironment(JWT_ENV_VARS.BOOSTER_ROLES_CLAIM, 'cognito:groups')
+  }
+
+  /**
+   * It will create all the groups based on roles definitions
+   * @param resourceParams current resource params
+   */
+  private static createGroups(resourceParams: ResourceParams): void {
+    const { stack, config, rocketStackPrefixId, userPool } = resourceParams
+    Object.entries(config.roles).map((role: any) => {
+      new CfnUserPoolGroup(stack, `${rocketStackPrefixId}-${role[0]}`, {
+        userPoolId: userPool?.userPoolId!,
+        groupName: role[0],
+      })
+    })
   }
 }

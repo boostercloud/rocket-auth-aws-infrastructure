@@ -34,7 +34,6 @@ export const tokenResponse = (
 ): APIGatewayProxyResult => {
   return response(200, {
     accessToken: authResult?.AccessToken || '',
-    idToken: authResult?.IdToken || '',
     expiresIn: authResult?.ExpiresIn || 0,
     refreshToken: authResult?.RefreshToken || '',
     tokenType: authResult?.TokenType || '',

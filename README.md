@@ -55,14 +55,14 @@ Booster.configure('production', (config: BoosterConfig): void => {
 The auth rocket will expose the following base url outputs:
 
 ```sh
-<appName>.AuthApiEndpoint = https://<httpURL>/production/auth
+<appName>.AuthApiURL = https://<httpURL>/production/auth
 <appName>.AuthApiIssuer = https://cognito-idp.<app-region>.amazonaws.com/{userPoolId}
 <appName>.AuthApiJwksUri = https://cognito-idp.<app-region>.amazonaws.com/{userPoolId}/.well-known/jwks.json
 ```
 
 | Output             | Description                                                                            |
 | ------------------ | -------------------------------------------------------------------------------------- |
-| AuthApiEndpoint    | Base Api Url which will exposed all auth endpoints.                                     |
+| AuthApiURL         | Base Api Url which will exposed all auth endpoints.                                     |
 | AuthApiIssuer      | The issuer who sign the JWT tokens.                                                     |
 | AuthApiJwksUri     | Uri with all the public keys used to sign the JWT tokens.                               |
 
@@ -241,7 +241,6 @@ UserPassword:
 ```json
 {
   "accessToken": "string",
-  "tokenId": "string",
   "expiresIn": "string",
   "refreshToken": "string",
   "tokenType": "string"
@@ -299,7 +298,6 @@ POST https://<httpURL>/auth/token
 ```json
 {
   "accessToken": "string",
-  "tokenId": "string",
   "expiresIn": "string",
   "refreshToken": "string",
   "tokenType": "string"
@@ -400,7 +398,6 @@ POST https://<httpURL>/auth/token/refresh
 ```json
 {
   "accessToken": "string",
-  "tokenId": "string",
   "expiresIn": "string",
   "refreshToken": "string",
   "tokenType": "string"

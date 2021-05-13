@@ -406,8 +406,11 @@ describe('With the auth API', () => {
 
     it('can sign in their account when skipConfirmation is false and user is manually confirmed. User will get a valid token.', async () => {
       // Manually confirming user
-      await confirmUser(userEmail)
-
+      try {
+        await confirmUser(userEmail)
+      } catch (e) {
+        console.log('Unable to confirm user', e)
+      }
       const url = await signInURL()
 
       const response = await fetch(url, {
@@ -498,7 +501,7 @@ describe('With the auth API', () => {
 
       before(async () => {
         userAuthInformation = await getUserAuthInformation(userEmail, userPassword)
-        authToken = userAuthInformation.idToken
+        authToken = userAuthInformation.accessToken
         client = await graphQLClientWithSubscriptions(() => authToken)
       })
 
@@ -722,7 +725,7 @@ describe('With the auth API', () => {
         before(async () => {
           refreshedUserAuthInformation = await refreshUserAuthInformation(userAuthInformation.refreshToken)
           // Update access token that's being used by the Apollo client
-          authToken = refreshedUserAuthInformation.idToken
+          authToken = refreshedUserAuthInformation.accessToken
           await client.reconnect()
         })
 
@@ -947,7 +950,11 @@ describe('With the auth API', () => {
 
     it('can sign in their account when skipConfirmation is false and user is manually confirmed. User will get a valid token.', async () => {
       // Manually confirming user
-      await confirmUser(userPhoneNumber)
+      try {
+        await confirmUser(userPhoneNumber)
+      } catch (e) {
+        console.log('Unable to confirm user', userPhoneNumber)
+      }
 
       const url = await signInURL()
 
@@ -1035,7 +1042,7 @@ describe('With the auth API', () => {
 
       before(async () => {
         adminUserAuthInformation = await getUserAuthInformation(adminEmail, adminPassword)
-        authToken = adminUserAuthInformation.idToken
+        authToken = adminUserAuthInformation.accessToken
         client = await graphQLClientWithSubscriptions(() => authToken)
       })
 
@@ -1130,7 +1137,7 @@ describe('With the auth API', () => {
         before(async () => {
           refreshedUserAuthInformation = await refreshUserAuthInformation(adminUserAuthInformation.refreshToken)
           // Update access token that's being used by the Apollo client
-          authToken = refreshedUserAuthInformation.idToken
+          authToken = refreshedUserAuthInformation.accessToken
           await client.reconnect()
         })
 
