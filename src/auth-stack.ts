@@ -11,7 +11,7 @@ import {
 import { Effect, PolicyStatement } from '@aws-cdk/aws-iam'
 import { LambdaIntegration, Resource, RestApi, Cors, CorsOptions } from '@aws-cdk/aws-apigateway'
 import { createLambda } from './utils'
-import { BoosterConfig, JWT_ENV_VARS } from '@boostercloud/framework-types'
+import { BoosterConfig, JWT_ENV_VARS, RoleMetadata } from '@boostercloud/framework-types'
 import { Function } from '@aws-cdk/aws-lambda'
 
 export interface AWSAuthRocketParams {
@@ -345,8 +345,7 @@ export class AuthStack {
    *  AuthUserPoolClientId: User pool client id, useful for integration tests
    * @param resourceParams current resource params
    */
-  private static printOutput(resourceParams: ResourceParams): void {
-    const { stack, tokenVerifier, userPool, userPoolClientId, config } = resourceParams
+  private static printOutput({ stack, tokenVerifier, userPool, userPoolClientId, config }: ResourceParams): void {
     const rootAPI = stack.node.tryFindChild(config.resourceNames.applicationStack + '-rest-api') as RestApi
 
     new CfnOutput(stack, 'AuthApiURL', {
@@ -415,7 +414,7 @@ export class AuthStack {
    */
   private static createGroups(resourceParams: ResourceParams): void {
     const { stack, config, rocketStackPrefixId, userPool } = resourceParams
-    Object.entries(config.roles).map((role: any) => {
+    Object.entries(config.roles).map((role: [string, RoleMetadata]) => {
       new CfnUserPoolGroup(stack, `${rocketStackPrefixId}-${role[0]}`, {
         userPoolId: userPool?.userPoolId!,
         groupName: role[0],
