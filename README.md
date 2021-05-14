@@ -30,6 +30,7 @@ Booster.configure('production', (config: BoosterConfig): void => {
   ])
 })
 ```
+
 ###### Note:
 > Make sure that you have defined the suitable roles for your application. Please, check the [Official Booster Documentation](https://github.com/boostercloud/booster/tree/main/docs#authentication-and-authorization) for more information.
 
