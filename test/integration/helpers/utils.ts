@@ -99,7 +99,7 @@ export async function stackResourcesByType(resourceType: string): Promise<Array<
 export async function authClientID(): Promise<string> {
   const { Outputs } = await appStack()
   const clientId = Outputs?.find((output) => {
-    return output.OutputKey === 'AuthUserPoolClientId'
+    return output.OutputKey === 'AuthApiUserPoolClientId'
   })?.OutputValue
 
   if (clientId) {
@@ -111,7 +111,6 @@ export async function authClientID(): Promise<string> {
 
 export interface UserAuthInformation {
   accessToken: string
-  idToken: string
   refreshToken: string
   expiresIn?: number
   tokenType?: string
@@ -121,7 +120,7 @@ export interface UserAuthInformation {
 export async function userPool(): Promise<string> {
   const { Outputs } = await appStack()
   const clientId = Outputs?.find((output) => {
-    return output.OutputKey === 'AuthUserPoolId'
+    return output.OutputKey === 'AuthApiUserPoolId'
   })?.OutputValue
 
   if (clientId) {
@@ -169,6 +168,14 @@ export async function createUser(username: string, password: string, role = 'Use
           Value: role,
         },
       ],
+    })
+    .promise()
+
+  await cognitoIdentityServiceProvider
+    .adminAddUserToGroup({
+      UserPoolId: physicalResourceId,
+      GroupName: role,
+      Username: username,
     })
     .promise()
 
@@ -293,7 +300,7 @@ export async function baseAuthHTTPURL(): Promise<string> {
   const { Outputs } = await appStack()
 
   const url = Outputs?.find((output) => {
-    return output.OutputKey === 'AuthApiEndpoint'
+    return output.OutputKey === 'AuthApiURL'
   })?.OutputValue
 
   if (!url) {

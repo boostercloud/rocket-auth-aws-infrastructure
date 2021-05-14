@@ -65,6 +65,16 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
         ],
       })
       .promise()
+
+    if (params.userAttributes.role) {
+      await cognitoService
+        .adminAddUserToGroup({
+          UserPoolId: process.env.userPoolId!,
+          GroupName: params.userAttributes.role,
+          Username: params.username,
+        })
+        .promise()
+    }
     return okResponse({
       id: signUpResponse.UserSub,
       username: params.username,
