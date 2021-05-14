@@ -71,7 +71,7 @@ export class AuthStack {
     }
   }
 
-  public static unmountStack?(): void {}
+  public static unmountStack?(): void { }
 
   public static rocketArtifactsPrefix(config: BoosterConfig): string {
     return `${config.appName}-${config.environmentName}-rocket-auth`
