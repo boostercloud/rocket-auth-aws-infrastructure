@@ -5,7 +5,7 @@ import { setEnv, checkConfigAnd } from './helpers/utils'
 import { sandboxPathFor } from './helpers/fileHelper'
 import { overrideWithBoosterLocalDependencies } from './helpers/depsHelper'
 
-import { copyFileSync, mkdirSync, readdirSync, rmdirSync } from 'fs'
+import { copyFileSync, mkdirSync, readdirSync, rmSync } from 'fs'
 import * as path from 'path'
 
 const copyFolder = (origin: string, destiny: string): void => {
@@ -21,14 +21,14 @@ const copyFolder = (origin: string, destiny: string): void => {
 }
 
 export const createSandboxProject = (sandboxPath: string): string => {
-  rmdirSync(sandboxPath, { recursive: true })
+  rmSync(sandboxPath, { recursive: true, force: true })
   mkdirSync(sandboxPath, { recursive: true })
   copyFolder(path.join('test', 'integration', 'app'), sandboxPath)
   return sandboxPath
 }
 
 export const removeSandboxProject = (sandboxPath: string): void => {
-  rmdirSync(sandboxPath, { recursive: true })
+  rmSync(sandboxPath, { recursive: true, force: true })
 }
 
 before(async () => {

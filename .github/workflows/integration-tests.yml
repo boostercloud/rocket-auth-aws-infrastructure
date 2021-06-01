@@ -11,14 +11,14 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
         with:
-          node-version: 12.x
+          node-version: 16.x
       - name: Configure AWS credentials from Test account
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.BOT_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.BOT_AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
-      - run: npm install @boostercloud/cli@0.16.1 --global
+      - run: npm install @boostercloud/cli@0.16.2 --global
       - run: npm install
       - run: npm run compile
       - run: npm run integration --stream
