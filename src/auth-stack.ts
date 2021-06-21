@@ -28,6 +28,7 @@ export interface AWSAuthRocketParams {
 type TokenVerifier = {
   issuer: string
   jwksUri: string
+  rolesClaim: string
 }
 
 // Type to unify the signature of all private methods. It will be filled along the way
@@ -383,10 +384,11 @@ export class AuthStack {
 
     const issuer = `https://cognito-idp.${stack.region}.${stack.urlSuffix}/${userPool?.userPoolId}`
     const jwksUri = issuer + '/.well-known/jwks.json'
-
+    const rolesClaim = 'cognito:groups'
     return {
       issuer,
       jwksUri,
+      rolesClaim,
     }
   }
   /**
@@ -395,17 +397,17 @@ export class AuthStack {
    */
   private static createEnvVars(resourceParams: ResourceParams): void {
     const { stack, tokenVerifier } = resourceParams
-    const { issuer, jwksUri } = tokenVerifier!
+    const { issuer, jwksUri, rolesClaim } = tokenVerifier!
 
     const graphQLHandler = stack.node.tryFindChild('graphql-handler') as Function
     graphQLHandler?.addEnvironment(JWT_ENV_VARS.BOOSTER_JWKS_URI, jwksUri)
     graphQLHandler?.addEnvironment(JWT_ENV_VARS.BOOSTER_JWT_ISSUER, issuer)
-    graphQLHandler?.addEnvironment(JWT_ENV_VARS.BOOSTER_ROLES_CLAIM, 'cognito:groups')
+    graphQLHandler?.addEnvironment(JWT_ENV_VARS.BOOSTER_ROLES_CLAIM, rolesClaim)
 
     const subscriptionHandler = stack.node.tryFindChild('subscriptions-notifier') as Function
     subscriptionHandler?.addEnvironment(JWT_ENV_VARS.BOOSTER_JWKS_URI, jwksUri)
     subscriptionHandler?.addEnvironment(JWT_ENV_VARS.BOOSTER_JWT_ISSUER, issuer)
-    subscriptionHandler?.addEnvironment(JWT_ENV_VARS.BOOSTER_ROLES_CLAIM, 'cognito:groups')
+    subscriptionHandler?.addEnvironment(JWT_ENV_VARS.BOOSTER_ROLES_CLAIM, rolesClaim)
   }
 
   /**
