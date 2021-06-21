@@ -1,6 +1,6 @@
 {
   "name": "@boostercloud/rocket-auth-aws-infrastructure",
-  "version": "1.0.4",
+  "version": "1.0.7",
   "description": "Booster rocket to deploy an auth api using AWS Cognito",
   "keywords": [
     "Booster",
@@ -33,11 +33,13 @@
   "scripts": {
     "lint:check": "eslint --ext '.js,.ts' **/*.ts",
     "lint:fix": "eslint --quiet --fix --ext '.js,.ts' **/*.ts",
-    "compile": "tsc -b tsconfig.json",
-    "postinstall": "npm --prefix src/lambdas install",
-    "postcompile": "cp -R src/lambdas/node_modules dist/lambdas",
+    "lambdas:install": "npm --prefix src/lambdas install",
+    "lambdas:postcompile": "cp -R src/lambdas/node_modules dist/lambdas",
     "clean": "rimraf ./dist tsconfig.tsbuildinfo",
-    "prepack": "tsc -b tsconfig.json",
+    "compile": "npm run lambdas:install; tsc -b tsconfig.json; npm run lambdas:postcompile",
+    "prepack": "npm run compile",
+    "publish:local": "npm publish --registry http://localhost:4873",
+    "publish:npmjs": "npm run clean; npm run compile; npm publish",
     "test": "nyc --extension .ts mocha --forbid-only \"test/unit/**/*.test.ts\"",
     "integration": "AWS_SDK_LOAD_CONFIG=true mocha --forbid-only --exit --config \"test/integration/.mocharc.yml\" \"test/integration/**/*.test.ts\""
   },

@@ -215,6 +215,30 @@ export async function confirmUser(username: string): Promise<void> {
     .promise()
 }
 
+async function confirmUserAttributes(username: string, attribute: string): Promise<void> {
+  const physicalResourceId = await userPool()
+  await cognitoIdentityServiceProvider
+    .adminUpdateUserAttributes({
+      UserPoolId: physicalResourceId,
+      Username: username,
+      UserAttributes: [
+        {
+          Name: attribute,
+          Value: 'true',
+        },
+      ],
+    })
+    .promise()
+}
+
+export async function confirmUserEmail(username: string): Promise<void> {
+  await confirmUserAttributes(username, 'email_verified')
+}
+
+export async function confirmUserPhone(username: string): Promise<void> {
+  await confirmUserAttributes(username, 'phone_number_verified')
+}
+
 export async function deleteUser(username: string): Promise<void> {
   const phisicalResouceId = await userPool()
   await cognitoIdentityServiceProvider
@@ -315,6 +339,10 @@ export async function signUpURL(): Promise<string> {
 
 export async function signInURL(): Promise<string> {
   return new URL('auth/sign-in', await baseAuthHTTPURL()).href
+}
+
+export async function forgotPasswordURL(): Promise<string> {
+  return new URL('auth/password/forgot', await baseAuthHTTPURL()).href
 }
 
 export async function signOutURL(): Promise<string> {

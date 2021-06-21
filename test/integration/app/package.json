@@ -5,12 +5,12 @@
   "author": "",
   "dependencies": {
     "@boostercloud/framework-core": "0.16.2",
-    "@boostercloud/framework-provider-aws": "*",
+    "@boostercloud/framework-provider-aws": "0.16.2",
     "@boostercloud/framework-types": "0.16.2",
     "tslib": "^2.0.3"
   },
   "devDependencies": {
-    "@boostercloud/framework-provider-aws-infrastructure": "*",
+    "@boostercloud/framework-provider-aws-infrastructure": "0.16.2",
     "@boostercloud/rocket-auth-aws-infrastructure": "^1.0.4",
     "@types/node": "^13.5.1",
     "@typescript-eslint/eslint-plugin": "^2.18.0",

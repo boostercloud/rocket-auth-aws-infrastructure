@@ -15,6 +15,7 @@ import {
   signInURL,
   UserAuthInformation,
   createUser,
+  forgotPasswordURL, confirmUserPhone, confirmUserEmail,
 } from './helpers/utils'
 import gql from 'graphql-tag'
 import fetch from 'cross-fetch'
@@ -402,54 +403,127 @@ describe('With the auth API', () => {
 
     after(async () => {
       await deleteUser(userEmail)
+      await deleteUser(anotherUserEmail)
     })
 
-    it('can sign in their account when skipConfirmation is false and user is manually confirmed. User will get a valid token.', async () => {
-      // Manually confirming user
-      try {
-        await confirmUser(userEmail)
-      } catch (e) {
-        console.log('Unable to confirm user', e)
-      }
-      const url = await signInURL()
+    context('when skipConfirmation is false', () => {
+      it('can not invoke forgot-password without manually confirming user. Error will be returned.', async () => {
+        const url = await forgotPasswordURL()
 
-      const response = await fetch(url, {
-        method: 'POST',
-        body: JSON.stringify({
-          username: userEmail,
-          password: userPassword,
-        }),
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        const response = await fetch(url, {
+          method: 'POST',
+          body: JSON.stringify({
+            username: userEmail,
+          }),
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+
+        expect(response.status).to.equal(500)
+
+        const message = await response.json()
+        expect(message).not.to.be.empty
+        expect(message.error.type).to.be.eq('InvalidParameterException')
+        expect(message.error.message).to.be.eq(
+          'Cannot reset password for the user as there is no registered/verified email or phone_number'
+        )
       })
+      context('when user is manually confirmed', () => {
+        before(async () => {
+          // Manually confirming user
+          try {
+            await confirmUser(userEmail)
+            await confirmUserEmail(userEmail)
+          } catch (e) {
+            console.log('Unable to confirm user', e)
+          }
+        })
+        it('can sign in their account. User will get a valid token.', async () => {
+          const url = await signInURL()
 
-      expect(response.status).to.equal(200)
+          const response = await fetch(url, {
+            method: 'POST',
+            body: JSON.stringify({
+              username: userEmail,
+              password: userPassword,
+            }),
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          })
 
-      const message = await response.json()
-      expect(message).not.to.be.empty
-      expect(message.accessToken).not.to.be.empty
+          expect(response.status).to.equal(200)
+
+          const message = await response.json()
+          expect(message).not.to.be.empty
+          expect(message.accessToken).not.to.be.empty
+        })
+        it('can invoke forgot-password. User will get an email.', async () => {
+          const url = await forgotPasswordURL()
+
+          const response = await fetch(url, {
+            method: 'POST',
+            body: JSON.stringify({
+              username: userEmail,
+            }),
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          })
+          expect(response.status).to.equal(200)
+
+          const message = await response.json()
+          expect(message).not.to.be.empty
+          expect(message.message).to.be.eq(
+            `The confirmation code to change your password has been sent to: ${userEmail}.`
+          )
+        })
+      })
     })
 
-    it('can sign in their account without manually confirming user when skipConfirmation is true. User will get a valid token.', async () => {
-      const url = await signInURL()
+    context('when skipConfirmation is true', () => {
+      it('can sign in their account without manually confirming user. User will get a valid token.', async () => {
+        const url = await signInURL()
 
-      const response = await fetch(url, {
-        method: 'POST',
-        body: JSON.stringify({
-          username: userEmail,
-          password: userPassword,
-        }),
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        const response = await fetch(url, {
+          method: 'POST',
+          body: JSON.stringify({
+            username: anotherUserEmail,
+            password: userPassword,
+          }),
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+
+        expect(response.status).to.equal(200)
+
+        const message = await response.json()
+        expect(message).not.to.be.empty
+        expect(message.accessToken).not.to.be.empty
       })
+      it('can invoke forgot-password without manually confirming user. User will get an email.', async () => {
+        const url = await forgotPasswordURL()
 
-      expect(response.status).to.equal(200)
+        const response = await fetch(url, {
+          method: 'POST',
+          body: JSON.stringify({
+            username: anotherUserEmail,
+          }),
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
 
-      const message = await response.json()
-      expect(message).not.to.be.empty
-      expect(message.accessToken).not.to.be.empty
+        expect(response.status).to.equal(200)
+
+        const message = await response.json()
+        expect(message).not.to.be.empty
+        expect(message.message).to.be.eq(
+          `The confirmation code to change your password has been sent to: ${anotherUserEmail}.`
+        )
+      })
     })
 
     context('with a wrong token', () => {
@@ -946,55 +1020,126 @@ describe('With the auth API', () => {
 
     after(async () => {
       await deleteUser(userPhoneNumber)
+      await deleteUser(userPhoneNumberNoConfirmation)
     })
 
-    it('can sign in their account when skipConfirmation is false and user is manually confirmed. User will get a valid token.', async () => {
-      // Manually confirming user
-      try {
-        await confirmUser(userPhoneNumber)
-      } catch (e) {
-        console.log('Unable to confirm user', userPhoneNumber)
-      }
+    context('when skipConfirmation is false', () => {
+      it('can not invoke forgot-password without manually confirming user. Error will be returned.', async () => {
+        const url = await forgotPasswordURL()
 
-      const url = await signInURL()
+        const response = await fetch(url, {
+          method: 'POST',
+          body: JSON.stringify({
+            username: userPhoneNumber,
+          }),
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
 
-      const response = await fetch(url, {
-        method: 'POST',
-        body: JSON.stringify({
-          username: userPhoneNumber,
-          password: userPassword,
-        }),
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        expect(response.status).to.equal(500)
+
+        const message = await response.json()
+        expect(message).not.to.be.empty
+        expect(message.error.type).to.be.eq('InvalidParameterException')
+        expect(message.error.message).to.be.eq(
+          'Cannot reset password for the user as there is no registered/verified email or phone_number'
+        )
       })
+      context('when user is manually confirmed', () => {
+        before(async () => {
+          // Manually confirming user
+          try {
+            await confirmUser(userPhoneNumber)
+            await confirmUserPhone(userPhoneNumber)
+          } catch (e) {
+            console.log('Unable to confirm user', userPhoneNumber)
+          }
+        })
+        it('can sign in their account. User will get a valid token.', async () => {
+          const url = await signInURL()
 
-      expect(response.status).to.equal(200)
+          const response = await fetch(url, {
+            method: 'POST',
+            body: JSON.stringify({
+              username: userPhoneNumber,
+              password: userPassword,
+            }),
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          })
 
-      const message = await response.json()
-      expect(message).not.to.be.empty
-      expect(message.accessToken).not.to.be.empty
+          expect(response.status).to.equal(200)
+
+          const message = await response.json()
+          expect(message).not.to.be.empty
+          expect(message.accessToken).not.to.be.empty
+        })
+        it('can invoke forgot-password. User will get a message.', async () => {
+          const url = await forgotPasswordURL()
+
+          const response = await fetch(url, {
+            method: 'POST',
+            body: JSON.stringify({
+              username: userPhoneNumber,
+            }),
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          })
+          expect(response.status).to.equal(200)
+
+          const message = await response.json()
+          expect(message).not.to.be.empty
+          expect(message.message).to.be.eq(
+            `The confirmation code to change your password has been sent to: ${userPhoneNumber}.`
+          )
+        })
+      })
     })
+    context('when skipConfirmation is true', () => {
+      it('can sign in their account without manually confirming user. User will get a valid token.', async () => {
+        const url = await signInURL()
 
-    it('can sign in their account without manually confirming user when skipConfirmation is true. User will get a valid token.', async () => {
-      const url = await signInURL()
+        const response = await fetch(url, {
+          method: 'POST',
+          body: JSON.stringify({
+            username: userPhoneNumberNoConfirmation,
+            password: userPassword,
+          }),
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
 
-      const response = await fetch(url, {
-        method: 'POST',
-        body: JSON.stringify({
-          username: userPhoneNumberNoConfirmation,
-          password: userPassword,
-        }),
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        expect(response.status).to.equal(200)
+
+        const message = await response.json()
+        expect(message).not.to.be.empty
+        expect(message.accessToken).not.to.be.empty
       })
+      it('can invoke forgot-password without manually confirming user. User will get a message.', async () => {
+        const url = await forgotPasswordURL()
 
-      expect(response.status).to.equal(200)
+        const response = await fetch(url, {
+          method: 'POST',
+          body: JSON.stringify({
+            username: userPhoneNumberNoConfirmation,
+          }),
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
 
-      const message = await response.json()
-      expect(message).not.to.be.empty
-      expect(message.accessToken).not.to.be.empty
+        expect(response.status).to.equal(200)
+
+        const message = await response.json()
+        expect(message).not.to.be.empty
+        expect(message.message).to.be.eq(
+          `The confirmation code to change your password has been sent to: ${userPhoneNumberNoConfirmation}.`
+        )
+      })
     })
   })
 
