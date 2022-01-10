@@ -20,14 +20,15 @@ import * as AWS from '@boostercloud/framework-provider-aws'
 
 Booster.configure('production', (config: BoosterConfig): void => {
   config.appName = 'my-store'
-  config.provider = Provider([
+  config.providerPackage = '@boostercloud/framework-provider-aws'
+  config.rockets = [
     {
       packageName: '@boostercloud/rocket-auth-aws-infrastructure',
       parameters: {         
-        mode: 'Passwordless'                     
+        mode: 'UserPassword'                     
       },
     },
-  ])
+  ]
 })
 ```
 
