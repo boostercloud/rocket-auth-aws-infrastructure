@@ -2,6 +2,21 @@
 
 This package is a configurable Booster rocket to add an authentication API based on Cognito to your Booster applications.
 
+- [Usage](https://github.com/boostercloud/rocket-auth-aws-infrastructure#usage)
+- [Configuration Options](https://github.com/boostercloud/rocket-auth-aws-infrastructure#configuration-options)
+- [Outputs](https://github.com/boostercloud/rocket-auth-aws-infrastructure#outputs)
+- [Operations](https://github.com/boostercloud/rocket-auth-aws-infrastructure#operations)
+  - [Sign-up](https://github.com/boostercloud/rocket-auth-aws-infrastructure#sign-up)
+  - [Confirm Sign-up](https://github.com/boostercloud/rocket-auth-aws-infrastructure#confirm-sign-up)
+  - [Resend Sign-up Confirmation Code](https://github.com/boostercloud/rocket-auth-aws-infrastructure#resend-sign-up-confirmation-code)
+  - [Sign-in](https://github.com/boostercloud/rocket-auth-aws-infrastructure#sign-in)
+  - [Request Passwordless Token](https://github.com/boostercloud/rocket-auth-aws-infrastructure#request-passwordless-token)
+  - [Revoke Access Token](https://github.com/boostercloud/rocket-auth-aws-infrastructure#revoke-access-token)
+  - [Refresh Access Token](https://github.com/boostercloud/rocket-auth-aws-infrastructure#refresh-access-token)
+  - [Request Password Reset](https://github.com/boostercloud/rocket-auth-aws-infrastructure#request-password-reset)
+  - [Change Password](https://github.com/boostercloud/rocket-auth-aws-infrastructure#change-password)
+
+
 ## Usage
 
 Install this package as a `devDependency` in your Booster project (It's a `devDependency` because it's only used during deployment, so we don't want this code to be uploaded to the project lambdas)
@@ -35,6 +50,7 @@ Booster.configure('production', (config: BoosterConfig): void => {
 ###### Note:
 > Make sure that you have defined the suitable roles for your application. Please, check the [Official Booster Documentation](https://github.com/boostercloud/booster/tree/main/docs#authentication-and-authorization) for more information.
 
+
 ## Configuration Options
 
 ```typescript
@@ -49,7 +65,6 @@ Booster.configure('production', (config: BoosterConfig): void => {
   mode: 'Passwordless' | 'UserPassword'      // If Passwordless, the user must be a phone number. If UserPassword, the user must be a valid email.
 }
 ```
-
 
 
 ## Outputs
@@ -69,6 +84,9 @@ The auth rocket will expose the following base url outputs:
 | AuthApiJwksUri     | Uri with all the public keys used to sign the JWT tokens.                               |
 
 The `AuthApiIssuer` and `AuthApiJwksUri` must be used in the `tokenVerifier` Booster config. More information about JWT Configuration [here.](https://github.com/boostercloud/booster/blob/master/docs/README.md#jwt-configuration)
+
+
+## Operations
 
 ### Sign-up
 
@@ -127,6 +145,7 @@ Example of an account with the given username which already exists:
 
 You will get an HTTP status code different from 2XX and a body with a message telling you the reason of the error.
 
+
 ### Confirm Sign-up
 
 Whenever a User signs up with their phone number in `Passwordless` mode, an SMS message will be sent with a confirmation code. If you're using a `UserPassword` mode an email with a confirmation link will be sent.
@@ -176,7 +195,8 @@ Example of an invalid verification code:
 }
 ```
 
-### Resend Sign-up confirmation code
+
+### Resend Sign-up Confirmation Code
 
 If for some reason the confirmation code never reaches your email, or your phone via SMS, you can ask the API to resend a new one.
 
@@ -271,7 +291,10 @@ Passwordless:
 | session    | The type of token used. It is always `Bearer`.                                                                                       |
 | _message_    | Message with the next steps. It is always: `Use the session and the code we have sent you via SMS to get your access tokens via POST /token.`.  |                                                                                     |
 
-Query to get the access tokens for Passwordless mode:
+
+### Request Passwordless Token
+
+Call this endpoint to get the access token for Passwordless mode:
 
 #### Endpoint
 
@@ -321,9 +344,10 @@ Example: Login of a user that has not been confirmed
 }
 ```
 
-##### Revoke token
 
-Users can call this endpoint to finish the session.
+### Revoke Access Token
+
+Users can call this endpoint to finish the session before token expires.
 
 #### Endpoint
 
@@ -371,7 +395,8 @@ Example: Invalid access token specified
 }
 ```
 
-### Refresh token
+
+### Refresh Access Token
 
 Users can call this endpoint to refresh the access token.
 
@@ -421,7 +446,9 @@ Refresh token error response body example: Invalid refresh token specified
 
 You will get a HTTP status code different from 2XX and a body with a message telling you the reason of the error.
 
-### Forgot password
+
+### Request Password Reset
+
 In case the password is forgotten, users can initiate the password change process through this endpoint.
 
 #### Endpoint
@@ -469,7 +496,10 @@ Example: User not found.
   }
 }
 ```
-### Change password
+
+
+### Change Password
+
 Using the code obtained from the email sent by the forgot password endpoint, users can change their password.
 
 #### Endpoint
