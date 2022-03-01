@@ -83,7 +83,7 @@ The auth rocket will expose the following base url outputs:
 | AuthApiIssuer      | The issuer who sign the JWT tokens.                                                     |
 | AuthApiJwksUri     | Uri with all the public keys used to sign the JWT tokens.                               |
 
-The `AuthApiIssuer` and `AuthApiJwksUri` must be used in the `tokenVerifier` Booster config. More information about JWT Configuration [here.](https://github.com/boostercloud/booster/blob/master/docs/README.md#jwt-configuration)
+The `AuthApiIssuer` and `AuthApiJwksUri` must be used in the `tokenVerifier` Booster config. More information about JWT Configuration [here.](https://github.com/boostercloud/booster/blob/main/docs/chapters/04_features.md#jwt-configuration)
 
 
 ## Operations
